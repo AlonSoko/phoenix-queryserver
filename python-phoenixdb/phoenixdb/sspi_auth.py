@@ -23,8 +23,17 @@ import base64
 import re
 from urllib.parse import urlparse
 
-import spnego
 from requests.auth import AuthBase
+
+try:
+    import spnego
+except OSError as e:
+    # pyspnego only catches ImportError around its optional gssapi import. A gssapi
+    # package installed without MIT Kerberos for Windows raises OSError instead.
+    raise RuntimeError(
+        "pyspnego could not be imported because the installed 'gssapi' package is "
+        "broken (%s). SSPI does not need it: run 'pip uninstall gssapi requests-gssapi'."
+        % e) from e
 
 _NEGOTIATE_RE = re.compile(r'(?:^|,)\s*Negotiate\s*([^,]*)', re.IGNORECASE)
 
